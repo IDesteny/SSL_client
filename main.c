@@ -5,7 +5,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #define HOST "github.com"
-#define DIR "/IDesteny"
+#define DIR "IDesteny"
 
 /* 128 KB */
 #define SRES 128 * 1024
@@ -37,8 +37,17 @@ INT WINAPI main(VOID)
 	INT iResultSSL_connect = SSL_connect(ssl);
 	if (iResultSSL_connect != TRUE) return EXIT_FAILURE;
 
-	LPCSTR template_headres = "GET %s HTTP/1.1\r\nHOST:%s\r\nConnection:close\r\n\r\n";
-	SIZE_T headers_len = strlen(template_headres) + strlen(HOST) + strlen(DIR);
+	LPCSTR template_headres =
+		"GET /%s HTTP/1.1\r\n"
+		"Host: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n";
+
+	SIZE_T headers_len =
+		strlen(template_headres) +
+		strlen(HOST) +
+		strlen(DIR);
+
 	LPSTR headres = malloc(headers_len);
 	if (headres == NULL) return EXIT_FAILURE;
 
@@ -51,8 +60,7 @@ INT WINAPI main(VOID)
 	LPSTR res = calloc(SRES, sizeof(CHAR));
 	if (res == NULL) return EXIT_FAILURE;
 
-	INT iResultSSL_read = 0;
-	INT countReaded = 0;
+	INT iResultSSL_read = 0, countReaded = 0;
 	do
 	{
 		iResultSSL_read = SSL_read(ssl, res + countReaded, SRES - countReaded);
