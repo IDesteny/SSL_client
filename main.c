@@ -7,7 +7,6 @@
 #define HOST "github.com"
 #define DIR "IDesteny"
 
-/* 128 KB */
 #define SRES 128 * 1024
 
 INT WINAPI main(VOID)
@@ -15,6 +14,10 @@ INT WINAPI main(VOID)
 	WSADATA wsaData;
 	INT iResultWSAStartup = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (iResultWSAStartup != EXIT_SUCCESS) return EXIT_FAILURE;
+
+	SSL_library_init();
+	SSL *ssl = SSL_new(SSL_CTX_new(SSLv23_method()));
+	if (ssl == NULL) return EXIT_FAILURE;
 
 	LPCSTR port = "443";
 	PADDRINFOA pAddr = NULL;
@@ -26,10 +29,6 @@ INT WINAPI main(VOID)
 
 	INT iResultConnet = connect(sock, pAddr->ai_addr, (INT)pAddr->ai_addrlen);
 	if (iResultConnet != EXIT_SUCCESS) return EXIT_FAILURE;
-
-	SSL_library_init();
-	SSL *ssl = SSL_new(SSL_CTX_new(SSLv23_method()));
-	if (ssl == NULL) return EXIT_FAILURE;
 
 	INT iResultSSL_set_fd = SSL_set_fd(ssl, (INT)sock);
 	if (iResultSSL_set_fd == FALSE) return EXIT_FAILURE;
@@ -54,7 +53,7 @@ INT WINAPI main(VOID)
 	INT iResultSprintf_s = sprintf_s(headres, headers_len, template_headres, DIR, HOST);
 	if (iResultSprintf_s == EOF) return EXIT_FAILURE;
 
-	INT iResultSSL_write = SSL_write(ssl, headres, (INT)headers_len);
+	INT iResultSSL_write = SSL_write(ssl, headres, (INT)headers_len - 4);
 	if (iResultSSL_write <= EXIT_SUCCESS) return EXIT_FAILURE;
 
 	LPSTR res = calloc(SRES, sizeof(CHAR));
